@@ -28,11 +28,45 @@ variable "outpost_name" {
   default = null
 }
 
+variable "eks_access_entry_principal_arn" {
+  type    = string
+  default = null
+}
+
+variable "eks_access_policy_association_principal_arn" {
+  type    = string
+  default = null
+}
+
+variable "eks_cluster_role_arn" {
+  type    = string
+  default = null
+}
+
+variable "eks_addon_service_account_role_arn" {
+  type    = string
+  default = null
+}
+
+variable "eks_fargate_profile_pod_execution_role_arn" {
+  type    = string
+  default = null
+}
+
+variable "eks_node_group_role_arn" {
+  type    = string
+  default = null
+}
+
+variable "eks_pod_identity_association_role_arn" {
+  type    = string
+  default = null
+}
+
 variable "access_entry" {
   type = list(object({
     id                = number
     cluster_id        = number
-    principal_id      = number
     kubernetes_groups = optional(list(string))
     tags              = optional(map(string))
     type              = optional(string)
@@ -48,7 +82,6 @@ variable "access_policy_association" {
     id           = number
     policy_name  = string
     cluster_id   = number
-    principal_id = number
     access_scope = list(object({
       type       = string
       namespaces = optional(list(string))
@@ -62,7 +95,6 @@ variable "access_policy_association" {
 variable "cluster" {
   type = list(object({
     id                        = number
-    role_id                   = optional(number)
     name                      = string
     enabled_cluster_log_types = optional(list(string))
     tags                      = optional(map(string))
@@ -112,7 +144,6 @@ variable "addon" {
     resolve_conflicts_on_update = optional(string)
     tags                        = optional(map(string))
     preserve                    = optional(bool)
-    role_id                     = optional(number)
   }))
   default     = []
   description = <<EOF
@@ -124,7 +155,6 @@ variable "fargate_profile" {
     id                   = number
     cluster_id           = number
     fargate_profile_name = string
-    role_id              = number
     tags                 = optional(map(string))
     subnet_ids           = list(string)
     selector = list(object({
@@ -163,7 +193,6 @@ variable "node_group" {
     id                     = number
     cluster_id             = number
     node_group_name        = string
-    node_role_id           = number
     subnet_ids             = list(number)
     ami_type               = optional(string)
     capacity_type          = optional(string)
@@ -207,7 +236,6 @@ variable "node_group" {
 variable "pod_identity_association" {
   type = list(object({
     id              = number
-    role_id         = number
     service_account = string
     namespace       = string
     cluster_id      = number
@@ -216,17 +244,4 @@ variable "pod_identity_association" {
   default     = []
   description = <<EOF
     EOF
-}
-
-variable "policy" {
-  type = list(object({
-    id   = number
-    name = string
-  }))
-  default = []
-}
-
-variable "assume_role_policy" {
-  type    = string
-  default = null
 }

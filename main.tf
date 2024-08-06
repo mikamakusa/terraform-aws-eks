@@ -3,9 +3,7 @@ resource "aws_eks_access_entry" "this" {
   cluster_name      = try(
     element(aws_eks_cluster.this.*.name, lookup(var.access_entry[count.index], "cluster_id"))
   )
-  principal_arn     = try(
-    element(aws_iam_role.this.*.arn, lookup(var.access_entry[count.index], "principal_id"))
-  )
+  principal_arn     = var.eks_access_entry_principal_arn
   kubernetes_groups = lookup(var.access_entry[count.index], "kubernetes_groups")
   tags              = merge(
     var.tags,
@@ -21,9 +19,7 @@ resource "aws_eks_access_policy_association" "this" {
   cluster_name  = try(
     element(aws_eks_cluster.this.*.name, lookup(var.access_policy_association[count.index], "cluster_id"))
   )
-  principal_arn = try(
-    element(aws_iam_role.this.*.arn, lookup(var.access_policy_association[count.index], "principal_id"))
-  )
+  principal_arn = var.eks_access_policy_association_principal_arn
 
   dynamic "access_scope" {
     for_each = lookup(var.access_policy_association[count.index], "access_scope")
@@ -37,9 +33,7 @@ resource "aws_eks_access_policy_association" "this" {
 resource "aws_eks_cluster" "this" {
   count                     = length(var.cluster)
   name                      = lookup(var.cluster[count.index], "name")
-  role_arn                  = try(
-    element(aws_iam_role.this.*.arn, lookup(var.cluster[count.index], "role_id"))
-  )
+  role_arn                  = var.eks_cluster_role_arn
   enabled_cluster_log_types = lookup(var.cluster[count.index], "enabled_cluster_log_types")
   tags                      = merge(
     var.tags,
@@ -112,9 +106,7 @@ resource "aws_eks_addon" "this" {
     lookup(var.addon[count.index], "tags")
   )
   preserve                    = lookup(var.addon[count.index], "preserve")
-  service_account_role_arn    = try(
-    element(aws_iam_role.this.*.arn, lookup(var.addon[count.index], "role_id"))
-  )
+  service_account_role_arn    = var.eks_addon_service_account_role_arn
 }
 
 resource "aws_eks_fargate_profile" "this" {
@@ -123,9 +115,7 @@ resource "aws_eks_fargate_profile" "this" {
     element(aws_eks_cluster.this.*.name, lookup(var.fargate_profile[count.index], "cluster_id"))
   )
   fargate_profile_name   = lookup(var.fargate_profile[count.index], "fargate_profile_name")
-  pod_execution_role_arn = try(
-    element(aws_iam_role.this.*.arn, lookup(var.fargate_profile[count.index], "role_id"))
-  )
+  pod_execution_role_arn = var.eks_fargate_profile_pod_execution_role_arn
   tags                   = merge(
     var.tags,
     lookup(var.fargate_profile[count.index], "tags")
@@ -175,9 +165,7 @@ resource "aws_eks_node_group" "this" {
     element(aws_eks_cluster.this.*.name, lookup(var.node_group[count.index], "cluster_id"))
   )
   node_group_name        = lookup(var.node_group[count.index], "node_group_name")
-  node_role_arn          = try(
-    element(aws_iam_role.this.*.arn, lookup(var.node_group[count.index], "role_id"))
-  )
+  node_role_arn          = var.eks_node_group_role_arn
   subnet_ids             = [data.aws_subnet.this.id]
   ami_type               = lookup(var.node_group[count.index], "ami_type")
   capacity_type          = lookup(var.node_group[count.index], "capacity_type")
@@ -242,9 +230,7 @@ resource "aws_eks_node_group" "this" {
 
 resource "aws_eks_pod_identity_association" "this" {
   count           = length(var.cluster) == 0 ? 0 : length(var.pod_identity_association)
-  role_arn        = try(
-    element(aws_iam_role.this.*.arn, lookup(var.pod_identity_association[count.index], "role_id"))
-  )
+  role_arn        = var.eks_pod_identity_association_role_arn
   service_account = lookup(var.pod_identity_association[count.index], "service_account")
   namespace       = lookup(var.pod_identity_association[count.index], "namespace")
   cluster_name    = try(
